@@ -1,0 +1,15 @@
+# An Ingress with 2 hosts and 3 endpoints
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: zchannel-ingress
+  namespace: zchannel
+spec:
+  rules:
+  - host: hpc.yourdomain.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: py-zchannel
+          servicePort: 8005

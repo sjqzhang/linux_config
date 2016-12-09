@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zchannel-config
+  namespace: zchannel
+data: 
+  config.py: | 
+    import logging
+    db={
+        'creator':'sqlite3',
+        'database':'cli.db',
+        'maxconnections':30,
+        'blocking':True,
+        'debug':True
+    }
+

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: php-config
+  namespace: zchannel
+data: 
+  config.php: | 
+  
+    <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+

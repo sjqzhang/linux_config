@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-zchannel
+  namespace: zchannel
+spec:
+  ports:
+  - name: http
+    port: 80
+  selector:
+    app: php-zchannel
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: php-zchannel
+  name: php-zchannel
+  namespace: zchannel
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: php-zchannel
+    spec:
+      containers:
+      - image: registry.yourdomain.com/zchannel/php-zchannel:0.7
+        name: php-zchannel
+        env:
+          - name: SERVER_URL
+            value: "http://zchannel.yourdomain.mz"
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: time
+          readOnly: true
+        - mountPath: /data/htdocs/zchannel/application/php-config
+          name: config-volume
+        - mountPath: /data/htdocs/zchannel/application/database-config
+          name: database-config-volume
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 2500m
+            memory: 2500Mi
+      volumes:
+      - hostPath:
+           path: /etc/localtime
+        name: time
+      - configMap:
+          name: php-config
+        name: config-volume
+      - configMap:
+          name: database-config
+        name: database-config-volume

@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: py-zchannel
+  namespace: zchannel
+spec:
+  ports:
+  - name: http
+    port: 8005
+  selector:
+    app: py-zchannel
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: py-zchannel
+  name: py-zchannel
+  namespace: zchannel
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: py-zchannel
+      annotations:
+        scheduler.alpha.kubernetes.io/affinity: >
+          {
+            "nodeAffinity": {
+              "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                  {
+                    "matchExpressions": [
+                      {
+                        "key": "share",
+                        "operator": "Exists"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+    spec:
+      containers:
+      - image: registry.yourdomain.com/zchannel/py-zchannel:1.1
+        name: py-zchannel
+        env:
+          - name: SERVER_URL
+            value: "http://zchannel.yourdomain.mz"
+        command:
+        - sh
+        - deploy
+        ports:
+        - containerPort: 8005
+          protocol: TCP
+        volumeMounts:
+        - mountPath: "/pyapp/scripts"
+          name: scripts
+        - mountPath: "/pyapp/files"
+          name: files
+        - mountPath: /pyapp/config
+          name: config-volume
+        - mountPath: /etc/localtime
+          name: time
+          readOnly: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 2500m
+            memory: 2500Mi
+      volumes:
+      - hostPath:
+           path: /etc/localtime
+        name: time
+      - hostPath:
+           path: /data/share/zchannel/files
+        name: files
+      - hostPath:
+           path: /data/share/zchannel/scripts
+        name: scripts
+      - configMap:
+          name: zchannel-config
+        name: config-volume
